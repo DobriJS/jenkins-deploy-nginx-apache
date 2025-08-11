@@ -1,69 +1,62 @@
 pipeline {
     agent any
-    
+
     stages {
-        stage('Create  directory for the WEB Application')        
-       {
+        stage('Prepare directory for the WEB Application') {
             steps {
-                //First, drop the directory if exists
-                sh 'rm -rf /home/jenkins/app-web'
-                //Create the directory
-                sh 'mkdir /home/jenkins/app-web'               
+                sh "rm -rf ${pwd()}/app-web"
+                sh "mkdir ${pwd()}/app-web"
             }
         }
-        stage('Drop the containers'){   
-            parallel{
-                stage('Drop apache container'){
-                    steps {
-                        echo 'droping the Apache container...'
-                        sh 'docker rm -f app-web-apache'
-                    }
-                }
-                stage('Drop Nginx Container'){
-                    steps{
-                        echo 'droping the Nginx container...'
-                        sh 'docker rm -f app-web-nginx'
-                    }
-                }           
+
+        stage('Drop the containers') {
+            steps {
+                echo 'Dropping the containers...'
+                sh 'docker rm -f app-web-apache || true'
+                sh 'docker rm -f app-web-nginx || true'
             }
         }
-        //Creating the containers in Parallel
+
         stage('Create the containers in Parallel') {
-            parallel{
-                stage('Create the Apache container')
-                {           
+            parallel {
+                stage('Create the Apache container') {
                     steps {
-                    echo 'Creating the Apache Container...'
-                    sh 'docker run -dit --name app-web-apache -p 9100:80  -v /home/jenkins/app-web:/usr/local/apache2/htdocs/ httpd'
+                        echo 'Creating the Apache Container...'
+                        sh "docker run -dit --name app-web-apache -p 9100:80 -v ${pwd()}/app-web:/usr/local/apache2/htdocs/ httpd"
                     }
                 }
                 stage('Create the Nginx container') {
-                   steps {
-                   echo 'Creating the Apache container...'
-                   sh 'docker run -dit --name app-web-nginx -p 9200:80  -v /home/jenkins/app-web:/usr/share/nginx/html nginx'         
-                   }
-                }       
-            }   
+                    steps {
+                        echo 'Creating the Nginx container...'
+                        sh "docker run -dit --name app-web-nginx -p 9200:80 -v ${pwd()}/app-web:/usr/share/nginx/html nginx"
+                    }
+                }
+            }
         }
-        //Copy the application   
+
+        stage('Wait for the containers to be ready') {
+            steps {
+                echo 'Waiting for the containers to be ready...'
+                sh 'sleep 5'
+            }
+        }
+
         stage('Copy the web application to the container directory') {
             steps {
-                echo 'Copying web application...'             
-                sh 'cp -r web/* /home/jenkins/app-web'
+                echo 'Copying web application...'
+                sh "cp -r web/* ${pwd()}/app-web"
             }
         }
     }
 
-    post {              
+    post {
         success {
-        // One or more steps need to be included within each condition's block.
-          echo 'The deployment in Nginx and Apache has worked'
-          archiveArtifacts allowEmptyArchive: true, artifacts: 'web/*', followSymlinks: false
-          cleanWs()         
-       }
-       failure {
-        // One or more steps need to be included within each condition's block.
-        echo 'An error has ocurred in the deploy'       
-       }
+            echo 'The deployment in Nginx and Apache has worked'
+            archiveArtifacts allowEmptyArchive: true, artifacts: 'web/*', followSymlinks: false
+            cleanWs()
+        }
+        failure {
+            echo 'An error has occurred in the deploy'
+        }
     }
 }
