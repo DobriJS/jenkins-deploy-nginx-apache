@@ -7,7 +7,7 @@ pipeline {
                 // First, drop the directory if exists
                 sh "rm -rf ${pwd()}/app-web"
                 // Create the directory
-                sh "mkdir ${pwd()/app-web"
+                sh "mkdir ${pwd()}/app-web"
 
             }
         }
