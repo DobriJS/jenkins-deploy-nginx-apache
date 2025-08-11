@@ -17,6 +17,13 @@ pipeline {
             }
         }
 
+         stage('Copy the web application to the container directory') {
+            steps {
+                echo 'Copying web application...'
+                sh "cp -r web/* ${pwd()}/app-web"
+            }
+        }
+
         stage('Create the containers in Parallel') {
             parallel {
                 stage('Create the Apache container') {
