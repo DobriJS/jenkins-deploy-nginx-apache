@@ -5,9 +5,9 @@ pipeline {
         stage('Create directory for the WEB Application') {        
             steps {
                 // First, drop the directory if exists
-                sh "rm -rf \$(pwd)/app-web"
+                sh "rm -rf ${pwd()}/app-web"
                 // Create the directory
-                sh "mkdir \$(pwd)/app-web"
+                sh "mkdir ${pwd()/app-web"
 
             }
         }
@@ -42,7 +42,7 @@ pipeline {
         stage('Copy the web application to the container directory') {
             steps {
                 echo 'Copying web application...'             
-                sh 'cp -r web/* \$(pwd)/app-web'
+                sh 'cp -r web/* ${pwd()/app-web'
             }
         }
     }
