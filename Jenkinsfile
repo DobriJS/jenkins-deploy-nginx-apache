@@ -6,6 +6,10 @@ pipeline {
             steps {
                 sh "rm -rf ${pwd()}/app-web"
                 sh "mkdir ${pwd()}/app-web"
+                echo 'CHECK WORK DIR'
+                sh "pwd"
+               // sh "ls -ld ${pwd()}/app-web"
+               // sh "ls -l ${pwd()}/app-web"
                 echo 'Copying web application...'
                 sh "cp -r web/* ${pwd()}/app-web"
             }
