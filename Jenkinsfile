@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Checkout source code') {
             steps {
-                git url: 'https://github.com/your-org/your-repo.git', branch: 'main'
+                git url: 'https://github.com/DobriJS/jenkins-deploy-nginx-apache.git', branch: 'main'
             }
         }
 
