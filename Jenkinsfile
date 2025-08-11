@@ -5,9 +5,10 @@ pipeline {
         stage('Create directory for the WEB Application') {        
             steps {
                 // First, drop the directory if exists
-                sh 'rm -rf $(pwd)/app-web'
+                sh "rm -rf \$(pwd)/app-web"
                 // Create the directory
-                sh 'mkdir $(pwd)/app-web'
+                sh "mkdir \$(pwd)/app-web"
+
             }
         }
 
@@ -25,13 +26,13 @@ pipeline {
                 stage('Create the Apache container') {           
                     steps {
                         echo 'Creating the Apache Container...'
-                        sh 'docker run -dit --name app-web-apache -p 9100:80 -v $(pwd)/app-web:/usr/local/apache2/htdocs/ httpd'
+                        sh "docker run -dit --name app-web-apache -p 9100:80 -v ${pwd()}/app-web:/usr/local/apache2/htdocs/ httpd"
                     }
                 }
                 stage('Create the Nginx container') {
                     steps {
                         echo 'Creating the Nginx container...'
-                        sh 'docker run -dit --name app-web-nginx -p 9200:80 -v $(pwd)/app-web:/usr/share/nginx/html nginx'
+                        sh "docker run -dit --name app-web-nginx -p 9200:80 -v ${pwd()}/app-web:/usr/share/nginx/html nginx"
                     }
                 }       
             }   
@@ -41,7 +42,7 @@ pipeline {
         stage('Copy the web application to the container directory') {
             steps {
                 echo 'Copying web application...'             
-                sh 'cp -r web/* $(pwd)/app-web'
+                sh 'cp -r web/* \$(pwd)/app-web'
             }
         }
     }
