@@ -42,7 +42,7 @@ pipeline {
         stage('Copy the web application to the container directory') {
             steps {
                 echo 'Copying web application...'             
-                sh 'cp -r web/* ${pwd()/app-web'
+                sh "cp -r web/* ${pwd()}/app-web"
             }
         }
     }
