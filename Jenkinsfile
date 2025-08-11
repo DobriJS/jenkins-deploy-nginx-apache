@@ -2,25 +2,23 @@ pipeline {
     agent any
     
     stages {
-        stage('Create directory for the WEB Application') {        
+        stage('Prepare directory for the WEB Application') {        
             steps {
-                // First, drop the directory if exists
                 sh "rm -rf ${pwd()}/app-web"
-                // Create the directory
                 sh "mkdir ${pwd()}/app-web"
-
+                echo 'Copying web application...'
+                sh "cp -r web/* ${pwd()}/app-web"
             }
         }
 
         stage('Drop the containers') {   
             steps {
                 echo 'Dropping the containers...'
-                sh 'docker rm -f app-web-apache'
-                sh 'docker rm -f app-web-nginx'
+                sh 'docker rm -f app-web-apache || true'
+                sh 'docker rm -f app-web-nginx || true'
             }
         }
 
-        // Creating the containers in Parallel
         stage('Create the containers in Parallel') {
             parallel {
                 stage('Create the Apache container') {           
@@ -37,14 +35,6 @@ pipeline {
                 }       
             }   
         }
-
-        // Copy the application   
-        stage('Copy the web application to the container directory') {
-            steps {
-                echo 'Copying web application...'             
-                sh "cp -r web/* ${pwd()}/app-web"
-            }
-        }
     }
 
     post {              
@@ -58,3 +48,4 @@ pipeline {
         }
     }
 }
+
