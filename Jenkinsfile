@@ -51,16 +51,5 @@ pipeline {
             }
         }
     }
-
-    post {              
-        success {
-            echo 'Deployment to Nginx and Apache succeeded.'
-            archiveArtifacts allowEmptyArchive: true, artifacts: 'web/*', followSymlinks: false
-            cleanWs()         
-        }
-        failure {
-            echo 'Deployment failed.'
-        }
-    }
 }
 
