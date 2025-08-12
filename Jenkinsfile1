@@ -1,62 +1,69 @@
 pipeline {
     agent any
-
+    
     stages {
-        stage('Prepare directory for the WEB Application') {
+        stage('Create  directory for the WEB Application')        
+       {
             steps {
-                sh "rm -rf ${pwd()}/app-web"
-                sh "mkdir ${pwd()}/app-web"
+                //First, drop the directory if exists
+                sh 'rm -rf /home/jenkins/app-web'
+                //Create the directory
+                sh 'mkdir /home/jenkins/app-web'               
             }
         }
-
-        stage('Drop the containers') {
-            steps {
-                echo 'Dropping the containers...'
-                sh 'docker rm -f app-web-apache || true'
-                sh 'docker rm -f app-web-nginx || true'
-            }
-        }
-
-        stage('Create the containers in Parallel') {
-            parallel {
-                stage('Create the Apache container') {
+        stage('Drop the containers'){   
+            parallel{
+                stage('Drop apache container'){
                     steps {
-                        echo 'Creating the Apache Container...'
-                        sh "docker run -dit --name app-web-apache -p 9100:80 -v ${pwd()}/app-web:/usr/local/apache2/htdocs/ httpd"
+                        echo 'droping the Apache container...'
+                        sh 'docker rm -f app-web-apache'
+                    }
+                }
+                stage('Drop Nginx Container'){
+                    steps{
+                        echo 'droping the Nginx container...'
+                        sh 'docker rm -f app-web-nginx'
+                    }
+                }           
+            }
+        }
+        //Creating the containers in Parallel
+        stage('Create the containers in Parallel') {
+            parallel{
+                stage('Create the Apache container')
+                {           
+                    steps {
+                    echo 'Creating the Apache Container...'
+                    sh 'docker run -dit --name app-web-apache -p 9100:80  -v /home/jenkins/app-web:/usr/local/apache2/htdocs/ httpd'
                     }
                 }
                 stage('Create the Nginx container') {
-                    steps {
-                        echo 'Creating the Nginx container...'
-                        sh "docker run -dit --name app-web-nginx -p 9200:80 -v ${pwd()}/app-web:/usr/share/nginx/html nginx"
-                    }
-                }
-            }
+                   steps {
+                   echo 'Creating the Apache container...'
+                   sh 'docker run -dit --name app-web-nginx -p 9200:80  -v /home/jenkins/app-web:/usr/share/nginx/html nginx'         
+                   }
+                }       
+            }   
         }
-
-        stage('Wait for the containers to be ready') {
-            steps {
-                echo 'Waiting for the containers to be ready...'
-                sh 'sleep 5'
-            }
-        }
-
+        //Copy the application   
         stage('Copy the web application to the container directory') {
             steps {
-                echo 'Copying web application...'
-                sh "cp -r web/* ${pwd()}/app-web"
+                echo 'Copying web application...'             
+                sh 'cp -r web/* /home/jenkins/app-web'
             }
         }
     }
 
-    post {
+    post {              
         success {
-            echo 'The deployment in Nginx and Apache has worked'
-            archiveArtifacts allowEmptyArchive: true, artifacts: 'web/*', followSymlinks: false
-            cleanWs()
-        }
-        failure {
-            echo 'An error has occurred in the deploy'
-        }
+        // One or more steps need to be included within each condition's block.
+          echo 'The deployment in Nginx and Apache has worked'
+          archiveArtifacts allowEmptyArchive: true, artifacts: 'web/*', followSymlinks: false
+          cleanWs()         
+       }
+       failure {
+        // One or more steps need to be included within each condition's block.
+        echo 'An error has ocurred in the deploy'       
+       }
     }
 }
